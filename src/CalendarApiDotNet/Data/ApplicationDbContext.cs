@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using CalendarApiDotNet.Models;
+using CalendarApi.Models;
 
 namespace CalendarApiDotNet.Data
 {
@@ -14,6 +15,8 @@ namespace CalendarApiDotNet.Data
             : base(options)
         {
         }
+
+        public DbSet<AbsenceRequest> AbsenceRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
