@@ -30,18 +30,21 @@ namespace CalendarApiDotNet
                 builder.AddUserSecrets();
             }
 
-            builder.AddEnvironmentVariables();
+            builder.AddEnvironmentVariables();          
+
             Configuration = builder.Build();
+
+
         }
 
         public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+        {            
+            services.AddEntityFrameworkSqlite().AddDbContext<ApplicationDbContext>(
+                options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
