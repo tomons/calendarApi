@@ -55,6 +55,8 @@ namespace CalendarApiDotNet
 
             // Inject an implementation of ISwaggerProvider with defaulted settings applied
             services.AddSwaggerGen();
+
+            services.AddSingleton<ICalendarRepository, CalendarRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

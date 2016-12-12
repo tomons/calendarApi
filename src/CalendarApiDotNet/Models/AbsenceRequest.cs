@@ -1,9 +1,7 @@
-﻿using CalendarApi.Models;
-using CalendarApiDotNet.Models;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CalendarApi.Models
+namespace CalendarApiDotNet.Models
 {
     public class AbsenceRequest
     {

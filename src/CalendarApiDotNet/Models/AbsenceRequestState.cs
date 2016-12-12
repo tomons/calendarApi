@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CalendarApi.Models
+namespace CalendarApiDotNet.Models
 {
     public enum AbsenceRequestState
     {

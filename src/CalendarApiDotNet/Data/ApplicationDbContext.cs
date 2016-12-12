@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using CalendarApiDotNet.Models;
-using CalendarApi.Models;
 
 namespace CalendarApiDotNet.Data
 {

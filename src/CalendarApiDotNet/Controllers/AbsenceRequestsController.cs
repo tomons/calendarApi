@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CalendarApi.Models;
 using CalendarApiDotNet.Data;
+using CalendarApiDotNet.Models;
 
 namespace CalendarApiDotNet.Controllers
 {
@@ -14,18 +14,25 @@ namespace CalendarApiDotNet.Controllers
     [Route("api/AbsenceRequests")]
     public class AbsenceRequestsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        //public TodoController(ITodoRepository todoItems)
+        //{
+        //    TodoItems = todoItems;
+        //}
+        //public ITodoRepository TodoItems { get; set; }
 
-        public AbsenceRequestsController(ApplicationDbContext context)
+
+        private readonly ICalendarRepository _repo;
+
+        public AbsenceRequestsController(ICalendarRepository repository)
         {
-            _context = context;
+            _repo = repository;
         }
 
         // GET: api/AbsenceRequests
         [HttpGet]
         public IEnumerable<AbsenceRequest> GetAbsenceRequests()
         {
-            return _context.AbsenceRequests;
+            return _repo.GetAll();
         }
 
         // GET: api/AbsenceRequests/5
@@ -37,7 +44,7 @@ namespace CalendarApiDotNet.Controllers
                 return BadRequest(ModelState);
             }
 
-            AbsenceRequest absenceRequest = await _context.AbsenceRequests.SingleOrDefaultAsync(m => m.Id == id);
+            AbsenceRequest absenceRequest = await _repo.Find(id);            
 
             if (absenceRequest == null)
             {
@@ -47,40 +54,40 @@ namespace CalendarApiDotNet.Controllers
             return Ok(absenceRequest);
         }
 
-        // PUT: api/AbsenceRequests/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAbsenceRequest([FromRoute] int id, [FromBody] AbsenceRequest absenceRequest)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //// PUT: api/AbsenceRequests/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutAbsenceRequest([FromRoute] int id, [FromBody] AbsenceRequest absenceRequest)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            if (id != absenceRequest.Id)
-            {
-                return BadRequest();
-            }
+        //    if (id != absenceRequest.Id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(absenceRequest).State = EntityState.Modified;
+        //    _context.Entry(absenceRequest).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AbsenceRequestExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!AbsenceRequestExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/AbsenceRequests
         [HttpPost]
@@ -90,15 +97,14 @@ namespace CalendarApiDotNet.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            _context.AbsenceRequests.Add(absenceRequest);
+            _repo.Add(absenceRequest);            
             try
             {
-                await _context.SaveChangesAsync();
+                await _repo.Save();
             }
             catch (DbUpdateException)
             {
-                if (AbsenceRequestExists(absenceRequest.Id))
+                if (await AbsenceRequestExists(absenceRequest.Id))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -120,21 +126,20 @@ namespace CalendarApiDotNet.Controllers
                 return BadRequest(ModelState);
             }
 
-            AbsenceRequest absenceRequest = await _context.AbsenceRequests.SingleOrDefaultAsync(m => m.Id == id);
+            AbsenceRequest absenceRequest = await _repo.Remove(id);
             if (absenceRequest == null)
             {
                 return NotFound();
-            }
-
-            _context.AbsenceRequests.Remove(absenceRequest);
-            await _context.SaveChangesAsync();
+            }            
+           
+            await _repo.Save();
 
             return Ok(absenceRequest);
         }
 
-        private bool AbsenceRequestExists(int id)
+        private async Task<bool> AbsenceRequestExists(int id)
         {
-            return _context.AbsenceRequests.Any(e => e.Id == id);
+            return (await _repo.Find(id)) != null;            
         }
     }
 }
