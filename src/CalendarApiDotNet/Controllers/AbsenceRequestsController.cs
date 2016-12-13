@@ -8,33 +8,40 @@ using Microsoft.EntityFrameworkCore;
 using CalendarApiDotNet.Data;
 using CalendarApiDotNet.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace CalendarApiDotNet.Controllers
 {
+    [Authorize]
     [Produces("application/json")]
     [Route("api/AbsenceRequests")]
     public class AbsenceRequestsController : Controller
     {
         private readonly ICalendarRepository _repo;
+        private readonly UserManager<ApplicationUser> _manager;
         private readonly IMapper _mapper;
 
         public AbsenceRequestsController(
             ICalendarRepository repository,
+            UserManager<ApplicationUser> manager,
             IMapper mapper)
         {
             _repo = repository;
+            _manager = manager;
             _mapper = mapper;
         }
 
         // GET: api/AbsenceRequests
-        [HttpGet]
+        [HttpGet]        
         public IEnumerable<AbsenceRequestDto> GetAbsenceRequests()
         {
             return _mapper.Map<IEnumerable<AbsenceRequestDto>>(_repo.GetAll());
         }
 
         // GET: api/AbsenceRequests/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}")]        
         public async Task<IActionResult> GetAbsenceRequest([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -90,23 +97,25 @@ namespace CalendarApiDotNet.Controllers
         //}
 
         // POST: api/AbsenceRequests
-        [HttpPost]
+        [HttpPost]        
         public async Task<IActionResult> PostAbsenceRequest([FromBody] AbsenceRequestCreateDto absenceRequestCreateDto)
         {
             //todo: validation (dates not in past etc.)
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }
+            }           
+
             var newAbsenceRequest = new AbsenceRequest()
             {
                 CreatedAt = DateTime.UtcNow,
                 FromDate = absenceRequestCreateDto.FromDate,
                 ToDate = absenceRequestCreateDto.ToDate,
                 State = AbsenceRequestState.Requested,
-                UserId = null // todo: set current user id
+                UserId = GetCurrentUserId()
             };            
-            _repo.Add(newAbsenceRequest);            
+            _repo.Add(newAbsenceRequest);    
+                    
             try
             {
                 await _repo.Save();
@@ -124,33 +133,16 @@ namespace CalendarApiDotNet.Controllers
             }
 
             return CreatedAtAction("GetAbsenceRequest", new { id = newAbsenceRequest.Id }, _mapper.Map<AbsenceRequestDto>(newAbsenceRequest));
-        }
-
-        //todo: probably will not need exposed delete method
-
-        // DELETE: api/AbsenceRequests/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAbsenceRequest([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            AbsenceRequest absenceRequest = await _repo.Remove(id);
-            if (absenceRequest == null)
-            {
-                return NotFound();
-            }            
-           
-            await _repo.Save();
-
-            return Ok(_mapper.Map<AbsenceRequestDto>(absenceRequest));
-        }
+        }       
 
         private async Task<bool> AbsenceRequestExists(int id)
         {
             return (await _repo.Find(id)) != null;            
+        }
+
+        private string GetCurrentUserId()
+        {
+            return this.User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }
 }
