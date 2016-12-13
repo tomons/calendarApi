@@ -42,7 +42,7 @@ namespace CalendarApiDotNet.Controllers
         }
 
         // GET: api/AbsenceRequests/5
-        [HttpGet("{id}")]        
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetAbsenceRequest([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -50,7 +50,7 @@ namespace CalendarApiDotNet.Controllers
                 return BadRequest(ModelState);
             }
 
-            AbsenceRequest absenceRequest = await _repo.Find(id);            
+            AbsenceRequest absenceRequest = await _repo.Find(id);
 
             if (absenceRequest == null)
             {
@@ -60,42 +60,21 @@ namespace CalendarApiDotNet.Controllers
             return Ok(_mapper.Map<AbsenceRequestDto>(absenceRequest));
         }
 
-        // todo: Approve, Reject request
+        // PUT: api/AbsenceRequests/approve/5
+        [Authorize(Roles = SeedData.AdminRole)]
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> PutAbsenceRequest([FromRoute] int id)
+        {
+            return await UpdateRequestState(id, AbsenceRequestState.Approved);
+        }
 
-        //// PUT: api/AbsenceRequests/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutAbsenceRequest([FromRoute] int id, [FromBody] AbsenceRequest absenceRequest)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    if (id != absenceRequest.Id)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(absenceRequest).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!AbsenceRequestExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
+        // PUT: api/AbsenceRequests/approve/5
+        [Authorize(Roles = SeedData.AdminRole)]
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> PutAbsenceRequestReject([FromRoute] int id)
+        {
+            return await UpdateRequestState( id, AbsenceRequestState.Requested);
+        }
 
         // POST: api/AbsenceRequests
         [HttpPost]        
@@ -134,7 +113,43 @@ namespace CalendarApiDotNet.Controllers
             }
 
             return CreatedAtAction("GetAbsenceRequest", new { id = newAbsenceRequest.Id }, _mapper.Map<AbsenceRequestDto>(newAbsenceRequest));
-        }       
+        }
+
+        private async Task<IActionResult> UpdateRequestState(
+           int id,          
+           AbsenceRequestState newState
+            )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var request = await _repo.Find(id);
+                if (request == null)
+                {
+                    return NotFound();
+                }              
+
+                request.State = newState;
+                await _repo.Save();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await AbsenceRequestExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
 
         private async Task<bool> AbsenceRequestExists(int id)
         {
