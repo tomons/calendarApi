@@ -43,7 +43,8 @@
     },
     "Swashbuckle": "6.0.0-beta902",
     "AutoMapper": "5.2.0",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0"
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
+    "Google.Apis.Calendar.v3": "1.19.0.705"
   },
 
   "tools": {

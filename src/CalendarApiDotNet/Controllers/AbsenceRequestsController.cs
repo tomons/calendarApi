@@ -11,6 +11,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using CalendarApiDotNet.Services;
 
 namespace CalendarApiDotNet.Controllers
 {
@@ -33,12 +34,19 @@ namespace CalendarApiDotNet.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/AbsenceRequests
-        [Authorize(Roles = SeedData.AdminRole)]
-        [HttpGet]        
+        // GET: api/AbsenceRequests        
+        [HttpGet]
         public IEnumerable<AbsenceRequestDto> GetAbsenceRequests()
         {
-            return _mapper.Map<IEnumerable<AbsenceRequestDto>>(_repo.GetAll());
+            if (this.User.IsInRole(SeedData.AdminRole))
+            {
+                return _mapper.Map<IEnumerable<AbsenceRequestDto>>(_repo.GetAll(null));
+            }
+            else
+            {
+                var currentUserId = GetCurrentUserId();
+                return _mapper.Map<IEnumerable<AbsenceRequestDto>>(_repo.GetAll(req => req.UserId == currentUserId));
+            }
         }
 
         // GET: api/AbsenceRequests/5
@@ -57,6 +65,12 @@ namespace CalendarApiDotNet.Controllers
                 return NotFound();
             }
 
+            // users cannot see others requests except admins
+            if(!User.IsInRole(SeedData.AdminRole) && absenceRequest.UserId != GetCurrentUserId())
+            {
+                return NotFound();
+            }
+
             return Ok(_mapper.Map<AbsenceRequestDto>(absenceRequest));
         }
 
@@ -65,7 +79,7 @@ namespace CalendarApiDotNet.Controllers
         [HttpPut("approve/{id}")]
         public async Task<IActionResult> PutAbsenceRequest([FromRoute] int id)
         {
-            return await UpdateRequestState(id, AbsenceRequestState.Approved);
+            return await UpdateRequestState(id, AbsenceRequestState.Approved);            
         }
 
         // PUT: api/AbsenceRequests/approve/5
@@ -131,10 +145,21 @@ namespace CalendarApiDotNet.Controllers
                 if (request == null)
                 {
                     return NotFound();
-                }              
+                }            
+                
+                if(request.State != AbsenceRequestState.Requested)
+                {
+                    return BadRequest(ModelState);
+                }                  
 
-                request.State = newState;
+                request.State = newState;               
                 await _repo.Save();
+
+                if (newState == AbsenceRequestState.Approved)
+                {
+                    GoogleCalendar.AddToCalendar(request.FromDate, request.ToDate);
+                }
+
             }
             catch (DbUpdateConcurrencyException)
             {

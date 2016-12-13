@@ -26,9 +26,10 @@ namespace CalendarApiDotNet.Models
            return await _context.AbsenceRequests.SingleOrDefaultAsync(m => m.Id == id);
         }
 
-        public IEnumerable<AbsenceRequest> GetAll()
+        public IEnumerable<AbsenceRequest> GetAll(Func<AbsenceRequest,bool> condition = null)
         {
-            return _context.AbsenceRequests;
+            if (condition == null) return _context.AbsenceRequests;
+            return _context.AbsenceRequests.Where(condition);
         }
 
         public async Task<AbsenceRequest> Remove(int id)

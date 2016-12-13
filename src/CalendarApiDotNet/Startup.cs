@@ -95,7 +95,8 @@ namespace CalendarApiDotNet
                 //ClientSecret = Configuration["Authentication:Google:ClientSecret"]
                 // just for demo purposes, not in production
                 ClientId = "717025442383-9ghkuepeofl7hka4bb2cuul92utkhi7u.apps.googleusercontent.com",
-                ClientSecret = "gMDtlyobLHfZqKs3TiMxx0FP"
+                ClientSecret = "gMDtlyobLHfZqKs3TiMxx0FP",
+                //SaveTokens = true                
             });
 
             app.UseMvc(routes =>
