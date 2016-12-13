@@ -9,6 +9,7 @@ using CalendarApiDotNet.Data;
 using CalendarApiDotNet.Models;
 using CalendarApiDotNet.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CalendarApiDotNet
 {
@@ -49,7 +50,11 @@ namespace CalendarApiDotNet
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.SslPort = 44327;
+                options.Filters.Add(new RequireHttpsAttribute());
+            });
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
