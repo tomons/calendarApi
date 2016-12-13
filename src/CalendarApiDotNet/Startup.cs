@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +33,7 @@ namespace CalendarApiDotNet
 
             Configuration = builder.Build();
 
-            _mapperConfiguration = AutoMapperConfiguration.Create();
+            _mapperConfiguration = AutoMapperConfiguration.Create();           
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -101,6 +97,8 @@ namespace CalendarApiDotNet
 
             // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
             app.UseSwaggerUi();
+
+            SeedData.Initialize(app.ApplicationServices);
         }
     }
 }

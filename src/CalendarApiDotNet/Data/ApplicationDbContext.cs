@@ -13,7 +13,7 @@ namespace CalendarApiDotNet.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-        }
+        }       
 
         public DbSet<AbsenceRequest> AbsenceRequests { get; set; }
 

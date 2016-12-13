@@ -34,6 +34,7 @@ namespace CalendarApiDotNet.Controllers
         }
 
         // GET: api/AbsenceRequests
+        [Authorize(Roles = SeedData.AdminRole)]
         [HttpGet]        
         public IEnumerable<AbsenceRequestDto> GetAbsenceRequests()
         {
