@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CalendarApiDotNet.Data;
 using CalendarApiDotNet.Models;
+using AutoMapper;
 
 namespace CalendarApiDotNet.Controllers
 {
@@ -14,25 +15,22 @@ namespace CalendarApiDotNet.Controllers
     [Route("api/AbsenceRequests")]
     public class AbsenceRequestsController : Controller
     {
-        //public TodoController(ITodoRepository todoItems)
-        //{
-        //    TodoItems = todoItems;
-        //}
-        //public ITodoRepository TodoItems { get; set; }
-
-
         private readonly ICalendarRepository _repo;
+        private readonly IMapper _mapper;
 
-        public AbsenceRequestsController(ICalendarRepository repository)
+        public AbsenceRequestsController(
+            ICalendarRepository repository,
+            IMapper mapper)
         {
             _repo = repository;
+            _mapper = mapper;
         }
 
         // GET: api/AbsenceRequests
         [HttpGet]
-        public IEnumerable<AbsenceRequest> GetAbsenceRequests()
+        public IEnumerable<AbsenceRequestDto> GetAbsenceRequests()
         {
-            return _repo.GetAll();
+            return _mapper.Map<IEnumerable<AbsenceRequestDto>>(_repo.GetAll());
         }
 
         // GET: api/AbsenceRequests/5
@@ -51,8 +49,10 @@ namespace CalendarApiDotNet.Controllers
                 return NotFound();
             }
 
-            return Ok(absenceRequest);
+            return Ok(_mapper.Map<AbsenceRequestDto>(absenceRequest));
         }
+
+        // todo: Approve, Reject request
 
         //// PUT: api/AbsenceRequests/5
         //[HttpPut("{id}")]
@@ -91,20 +91,29 @@ namespace CalendarApiDotNet.Controllers
 
         // POST: api/AbsenceRequests
         [HttpPost]
-        public async Task<IActionResult> PostAbsenceRequest([FromBody] AbsenceRequest absenceRequest)
+        public async Task<IActionResult> PostAbsenceRequest([FromBody] AbsenceRequestCreateDto absenceRequestCreateDto)
         {
+            //todo: validation (dates not in past etc.)
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            _repo.Add(absenceRequest);            
+            var newAbsenceRequest = new AbsenceRequest()
+            {
+                CreatedAt = DateTime.UtcNow,
+                FromDate = absenceRequestCreateDto.FromDate,
+                ToDate = absenceRequestCreateDto.ToDate,
+                State = AbsenceRequestState.Requested,
+                UserId = null // todo: set current user id
+            };            
+            _repo.Add(newAbsenceRequest);            
             try
             {
                 await _repo.Save();
             }
             catch (DbUpdateException)
             {
-                if (await AbsenceRequestExists(absenceRequest.Id))
+                if (await AbsenceRequestExists(newAbsenceRequest.Id))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -114,8 +123,10 @@ namespace CalendarApiDotNet.Controllers
                 }
             }
 
-            return CreatedAtAction("GetAbsenceRequest", new { id = absenceRequest.Id }, absenceRequest);
+            return CreatedAtAction("GetAbsenceRequest", new { id = newAbsenceRequest.Id }, _mapper.Map<AbsenceRequestDto>(newAbsenceRequest));
         }
+
+        //todo: probably will not need exposed delete method
 
         // DELETE: api/AbsenceRequests/5
         [HttpDelete("{id}")]
@@ -134,7 +145,7 @@ namespace CalendarApiDotNet.Controllers
            
             await _repo.Save();
 
-            return Ok(absenceRequest);
+            return Ok(_mapper.Map<AbsenceRequestDto>(absenceRequest));
         }
 
         private async Task<bool> AbsenceRequestExists(int id)

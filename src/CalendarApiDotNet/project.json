@@ -1,4 +1,4 @@
-﻿{
+{
   "userSecretsId": "aspnet-CalendarApiDotNet-dd5b1863-2c24-4221-ae5b-ec4373771e0a",
 
   "dependencies": {
@@ -41,7 +41,8 @@
       "version": "1.0.0-preview2-final",
       "type": "build"
     },
-    "Swashbuckle": "6.0.0-beta902"
+    "Swashbuckle": "6.0.0-beta902",
+    "AutoMapper": "5.2.0"
   },
 
   "tools": {

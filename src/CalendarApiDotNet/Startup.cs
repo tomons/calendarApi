@@ -12,11 +12,14 @@ using Microsoft.Extensions.Logging;
 using CalendarApiDotNet.Data;
 using CalendarApiDotNet.Models;
 using CalendarApiDotNet.Services;
+using AutoMapper;
 
 namespace CalendarApiDotNet
 {
     public class Startup
     {
+        private MapperConfiguration _mapperConfiguration { get; set; }
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -30,11 +33,11 @@ namespace CalendarApiDotNet
                 builder.AddUserSecrets();
             }
 
-            builder.AddEnvironmentVariables();          
+            builder.AddEnvironmentVariables();            
 
             Configuration = builder.Build();
 
-
+            _mapperConfiguration = AutoMapperConfiguration.Create();
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -59,6 +62,7 @@ namespace CalendarApiDotNet
             // Inject an implementation of ISwaggerProvider with defaulted settings applied
             services.AddSwaggerGen();
 
+            services.AddSingleton<IMapper>(sp => _mapperConfiguration.CreateMapper());
             services.AddSingleton<ICalendarRepository, CalendarRepository>();
         }
 
