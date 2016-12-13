@@ -41,12 +41,12 @@ namespace CalendarApiDotNet.Data
                 }
             }            
 
-            const string adminUserName = "tomons@gmail.com";
+            const string adminUserName = "tomodevtest@gmail.com";
 
             var adminUser = new ApplicationUser
             {
-                Email = "tomons@gmail.com",
-                NormalizedEmail = "TOMONS@GMAIL.COM",
+                Email = "tomodevtest@gmail.com",
+                NormalizedEmail = "TOMODEVTEST@GMAIL.COM",
                 UserName = adminUserName,
                 NormalizedUserName = adminUserName.ToUpper(),
                 PhoneNumber = "+923366633352",
@@ -63,8 +63,7 @@ namespace CalendarApiDotNet.Data
                 adminUser.PasswordHash = hashed;                
                 await userStore.CreateAsync(adminUser);                                              
             }
-
-            //adminUser = await userManager.FindByEmailAsync("tomons@gmail.com");
+            
             if (!await userStore.IsInRoleAsync(adminUser, AdminRole))
             {
                 var user = await userManager.FindByNameAsync(adminUserName);

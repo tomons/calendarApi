@@ -42,7 +42,8 @@
       "type": "build"
     },
     "Swashbuckle": "6.0.0-beta902",
-    "AutoMapper": "5.2.0"
+    "AutoMapper": "5.2.0",
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0"
   },
 
   "tools": {
@@ -56,7 +57,7 @@
       "imports": [
         "portable-net45+win8"
       ]
-    }
+    }    
   },
 
   "frameworks": {

@@ -89,6 +89,14 @@ namespace CalendarApiDotNet
             app.UseIdentity();
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
+            app.UseGoogleAuthentication(new GoogleOptions()
+            {
+                //ClientId = Configuration["Authentication:Google:ClientId"],
+                //ClientSecret = Configuration["Authentication:Google:ClientSecret"]
+                // just for demo purposes, not in production
+                ClientId = "717025442383-9ghkuepeofl7hka4bb2cuul92utkhi7u.apps.googleusercontent.com",
+                ClientSecret = "gMDtlyobLHfZqKs3TiMxx0FP"
+            });
 
             app.UseMvc(routes =>
             {
